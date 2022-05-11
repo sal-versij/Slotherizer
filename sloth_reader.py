@@ -1,4 +1,3 @@
-# bot.py
 import os
 import random
 import datetime
@@ -20,21 +19,31 @@ async def phrase(ctx, message_number):
         messages = await ctx.channel.history(limit=message_number, oldest_first=False).flatten()
      
         file = open('messages.txt', 'w')
+        
+        chat_log = {
+            "channel":ctx.channel.id,
+            "chat":[]
+        } 
+
         for element in messages:
             # Prendo i dati che mi servono
-            channel = str(element.channel)
+            channel = element.channel.id 
             author = str(element.author)
             content = element.content
+            date = str(element.created_at)
 
+            # Mettere in un array 
             message_info = {
-            "channel": channel,
             "author": author,
-            "content": content
+            "content": content,
+            "date": date
             }
 
-            json_message_info = json.dumps(message_info)
+            chat_log["chat"].append(message_info)
 
-            file.write(json_message_info + "\n")    
+        json_message_info = json.dumps(chat_log)
+
+        file.write(json_message_info + "\n")    
         file.close()
     else:
         await ctx.send("METTI UN INTERO CRETINO")
