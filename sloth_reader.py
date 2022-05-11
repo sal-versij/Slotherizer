@@ -22,14 +22,19 @@ async def phrase(ctx, message_number):
         file = open('messages.txt', 'w')
         for element in messages:
             # Prendo i dati che mi servono
-            channel = element.channel
-            author = element.author
+            channel = str(element.channel)
+            author = str(element.author)
             content = element.content
 
-            print(channel, author, content)
-            print(type(channel), type(author), type(content))
+            message_info = {
+            "channel": channel,
+            "author": author,
+            "content": content
+            }
 
-            file.write(content + "\n")    
+            json_message_info = json.dumps(message_info)
+
+            file.write(json_message_info + "\n")    
         file.close()
     else:
         await ctx.send("METTI UN INTERO CRETINO")
