@@ -4,11 +4,11 @@ import datetime
 from pathlib import Path
 from discord.ext import commands
 import json
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import re
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+#load_dotenv()
+#TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='!')
 
@@ -18,22 +18,22 @@ async def phrase(ctx, message_number):
     if re.match(r'^\s*\d+\s*$', message_number):
         message_number = int(message_number)
         messages = await ctx.channel.history(limit=message_number, oldest_first=False).flatten()
-     
-        file = open(Path(__file__).parent / '../logstash/json/chatLog.json', 'a')
-        
+
+        file = open(Path(__file__).parent / '../SlothReader/logstash/json/chatLog.json', 'a')
+
         chat_log = {
             "channel":ctx.channel.id,
             "chat":[]
-        } 
+        }
 
         for element in messages:
             # Prendo i dati che mi servono
-            channel = element.channel.id 
+            channel = element.channel.id
             author = str(element.author)
             content = element.content
             date = str(element.created_at)
 
-            # Mettere in un array 
+            # Mettere in un array
             message_info = {
             "author": author,
             "content": content,
@@ -44,7 +44,7 @@ async def phrase(ctx, message_number):
 
         json_message_info = json.dumps(chat_log)
 
-        file.write(json_message_info + "\n")    
+        file.write(json_message_info + "\n")
         file.close()
     else:
         await ctx.send("METTI UN INTERO CRETINO")
