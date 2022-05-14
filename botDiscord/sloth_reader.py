@@ -1,6 +1,7 @@
 import os
 import random
 import datetime
+from pathlib import Path
 from discord.ext import commands
 import json
 from dotenv import load_dotenv
@@ -18,7 +19,7 @@ async def phrase(ctx, message_number):
         message_number = int(message_number)
         messages = await ctx.channel.history(limit=message_number, oldest_first=False).flatten()
      
-        file = open('messages.txt', 'w')
+        file = open(Path(__file__).parent / '../logstash/json/chatLog.json', 'a')
         
         chat_log = {
             "channel":ctx.channel.id,
