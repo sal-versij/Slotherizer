@@ -29,6 +29,17 @@ services:
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-
+    spark:
+        build:
+            context: spark
+            dockerfile: Dockerfile
+        ports:
+            - 4040:4040
+        container_name: spark
+        depends_on:
+            - broker
+        volumes:
+            - ./logstash/json:/usr/share/logstash/json
+            - ./spark/scripts:/app
 volumes:
     json:
