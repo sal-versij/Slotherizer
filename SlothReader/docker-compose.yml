@@ -8,6 +8,8 @@ services:
         container_name: logstash
         volumes:
             - ./logstash/json:/usr/share/logstash/json
+        networks:
+            - tap
     zookeeper:
         image: confluentinc/cp-zookeeper:7.0.1
         container_name: zookeeper
@@ -16,12 +18,12 @@ services:
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_TICK_TIME: 2000
-            ZOOKEEPER_SERVER_ID: "1"
         networks:
             - tap
     kafkaserver:
         image: confluentinc/cp-kafka:7.0.1
         container_name: kafkaserver
+        hostname: kafkaserver
         ports:
             - "9092:9092"
             - "9101:9101"
@@ -30,10 +32,10 @@ services:
         environment:
             KAFKA_BROKER_ID: 0
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafkaserver:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
         networks:
             - tap
     spark:

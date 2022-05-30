@@ -48,12 +48,12 @@ df_kafka = spark \
     .option("startingOffset", "earliest") \
     .load()
 
-df_json = df_kafka.selectExpr("CAST(value AS STRING)") \
-    .select(from_json("value", schema).alias("data")) \
-    .select("data.*")
+#df_json = df_kafka.selectExpr("CAST(value AS STRING)") \
+#    .select(from_json("value", schema).alias("data")) \
+#    .select("data.*")
 
 # print stream
-df_json.writeStream \
+df_kafka.writeStream \
     .format("console") \
     .outputMode("append") \
     .start() \

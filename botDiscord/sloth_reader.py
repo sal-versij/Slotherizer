@@ -12,7 +12,7 @@ import re
 
 bot = commands.Bot(command_prefix='!')
 
-@bot.command(name = 'riassumimi')
+@bot.command(name = 'slotherizer')
 async def phrase(ctx, message_number):
     #Controlla se è un intero
     if re.match(r'^\s*\d+\s*$', message_number):
