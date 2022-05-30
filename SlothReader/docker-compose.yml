@@ -11,24 +11,31 @@ services:
     zookeeper:
         image: confluentinc/cp-zookeeper:7.0.1
         container_name: zookeeper
+        ports:
+            - "2181:2181"
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_TICK_TIME: 2000
-    broker:
+            ZOOKEEPER_SERVER_ID: "1"
+        networks:
+            - tap
+    kafkaserver:
         image: confluentinc/cp-kafka:7.0.1
-        container_name: broker
+        container_name: kafkaserver
         ports:
             - "9092:9092"
+            - "9101:9101"
         depends_on:
             - zookeeper
         environment:
-            KAFKA_BROKER_ID: 1
-            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+            KAFKA_BROKER_ID: 0
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+        networks:
+            - tap
     spark:
         build:
             context: spark
@@ -37,9 +44,15 @@ services:
             - 4040:4040
         container_name: spark
         depends_on:
-            - broker
+            - kafkaserver
         volumes:
             - ./logstash/json:/usr/share/logstash/json
             - ./spark/scripts:/app
+        networks:
+            - tap
 volumes:
     json:
+networks:
+    tap:
+        name: tap
+        driver: bridge

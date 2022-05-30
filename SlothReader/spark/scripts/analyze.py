@@ -121,7 +121,7 @@ def get_prediction(file_name):
 ##########################################
 
 
-kafkaServer = "broker:29092"
+kafkaServer = "kafkaserver:9092"
 elastic_host = "http://elasticsearch"
 
 elastic_topic = "tap"

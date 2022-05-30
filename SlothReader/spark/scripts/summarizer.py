@@ -20,7 +20,7 @@ import pyspark.sql.types as tp
 # import json
 # import random
 
-kafkaServer = "broker:29092"
+kafkaServer = "kafkaserver:9092"
 topic = "chat_log"
 
 sparkConf = SparkConf().set("spark.app.name", "sloth-reader") \
