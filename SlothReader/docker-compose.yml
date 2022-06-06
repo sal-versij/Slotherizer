@@ -10,6 +10,7 @@ services:
             - ./logstash/json:/usr/share/logstash/json
         networks:
             - tap
+
     zookeeper:
         image: confluentinc/cp-zookeeper:7.0.1
         container_name: zookeeper
@@ -20,6 +21,7 @@ services:
             ZOOKEEPER_TICK_TIME: 2000
         networks:
             - tap
+
     kafkaserver:
         image: confluentinc/cp-kafka:7.0.1
         container_name: kafkaserver
@@ -38,10 +40,27 @@ services:
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
         networks:
             - tap
+
+    webui:
+        image: provectuslabs/kafka-ui:latest
+        container_name: kafkaWebUI
+        environment:
+            KAFKA_CLUSTERS_0_NAME: my_cluster
+            KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+            KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafkaserver:9092
+        ports:
+            - 8080:8080
+        depends_on:
+            - kafkaserver
+        networks:
+            - tap
+
     spark:
         build:
             context: spark
             dockerfile: Dockerfile
+        environment:
+            OPENAI_API_KEY: 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
         ports:
             - 4040:4040
         container_name: spark
@@ -52,6 +71,18 @@ services:
             - ./spark/scripts:/app
         networks:
             - tap
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+        container_name: elasticsearch
+        networks:
+            - tap
+        expose:
+            - 9200
+            - 9300
+        environment:
+            - discovery.type=single-node
+            - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
 volumes:
     json:
 networks:

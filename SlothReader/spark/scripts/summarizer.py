@@ -1,27 +1,39 @@
-# from numpy import result_type
-# from pyspark.sql.functions import udf
-
+import openai
 from pyspark import SparkContext
 from pyspark.conf import SparkConf
 from pyspark.sql.session import SparkSession
-
-# from elasticsearch import Elasticsearch
+from pyspark.sql.functions import udf
 from pyspark.sql.functions import from_json
 import pyspark.sql.types as tp
 
-# import time
-# # making the post request to get the last prediction
-# # plotting the last tag, bbox and percentage prediction
-# # sending back the modified image to the telegram user
-# import matplotlib.pyplot as plt
-# from matplotlib.patches import Rectangle
-# from PIL import Image
-# import requests
-# import json
-# import random
+openai.organization = "org-7WfLEfgviGF6D4bJvXBk5NFf"
+
+
+@udf(returnType=tp.StringType())
+def tldr(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=prompt,
+        temperature=0.7,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    print('########', prompt, response["choices"][0]["text"])
+
+    return response["choices"][0]["text"].strip()
+
+
+@udf(returnType=tp.StringType())
+def create_chat(chat):
+    # "Chatlog:\n"+
+    return "\n".join(map(lambda r: f"[{r.date}]{r.author}: {r.content}", chat)) + "\nTl;Dr:"
+
 
 kafkaServer = "kafkaserver:9092"
-topic = "chat_log"
+topic = "chat-log"
 
 sparkConf = SparkConf().set("spark.app.name", "sloth-reader") \
     .set("spark.executor.heartbeatInterval", "200000") \
@@ -32,11 +44,12 @@ spark = SparkSession(sc)
 spark.sparkContext.setLogLevel("WARN")
 
 schema = tp.StructType([
-    tp.StructField("channel", tp.IntegerType(), False),
+    tp.StructField("channel", tp.StringType(), False),
+    tp.StructField("author", tp.StringType(), False),
     tp.StructField("chat", tp.ArrayType(tp.StructType([
         tp.StructField("author", tp.StringType(), False),
         tp.StructField("content", tp.StringType(), True),
-        tp.StructField("date", tp.DateType(), True)
+        tp.StructField("date", tp.TimestampType(), True)
     ])), True),
 ])
 
@@ -48,13 +61,15 @@ df_kafka = spark \
     .option("startingOffset", "earliest") \
     .load()
 
-#df_json = df_kafka.selectExpr("CAST(value AS STRING)") \
-#    .select(from_json("value", schema).alias("data")) \
-#    .select("data.*")
+df_json = df_kafka.selectExpr("CAST(value AS STRING)") \
+    .select(from_json("value", schema).alias("data")) \
+    .select("data.channel", create_chat("data.chat").alias("chat")) \
+    .select("channel", tldr("chat").alias("chat"))
 
 # print stream
-df_kafka.writeStream \
+df_json.writeStream \
     .format("console") \
     .outputMode("append") \
     .start() \
     .awaitTermination()
+0

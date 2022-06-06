@@ -1,6 +1,6 @@
 FROM jupyter/pyspark-notebook:spark-3.1.1
 
-RUN pip3 install pyspark kafka-utils elasticsearch matplotlib requests Pillow
+RUN pip3 install pyspark kafka-utils elasticsearch matplotlib requests Pillow openai
 
 WORKDIR /app
 
