@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import threading
 from pathlib import Path
 from discord.ext import commands
@@ -94,6 +93,5 @@ def shutdown():
 # 	if message.content == "qual'e la risposta?":
 # 		await message.channel.send("42")
 
-consume_loop(consumer, ["send-to-discord"])
-
+threading.Thread(target=consume_loop, args=[consumer, ["send-to-discord"]])
 bot.run(TOKEN)

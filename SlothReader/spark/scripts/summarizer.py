@@ -9,6 +9,7 @@ import pyspark.sql.types as tp
 openai.organization = "org-7WfLEfgviGF6D4bJvXBk5NFf"
 elastic_index = "tap"
 
+
 @udf(returnType=tp.StringType())
 def tldr(prompt):
     response = openai.Completion.create(
@@ -33,7 +34,8 @@ def create_chat(chat):
 
 
 kafkaServer = "kafkaserver:9092"
-topic = "chat-log"
+topicIn = "chat-log"
+topicDiscord = "send-to-discord"
 
 sparkConf = SparkConf().set("spark.app.name", "sloth-reader") \
     .set("spark.executor.heartbeatInterval", "200000") \
@@ -53,18 +55,18 @@ schema = tp.StructType([
     ])), True),
 ])
 
-df_kafka = spark \
+df_kafka_in = spark \
     .readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", kafkaServer) \
-    .option("subscribe", topic) \
+    .option("subscribe", topicIn) \
     .option("startingOffset", "earliest") \
     .load()
 
-df_json = df_kafka.selectExpr("CAST(value AS STRING)") \
+df_json = df_kafka_in.selectExpr("CAST(value AS STRING)") \
     .select(from_json("value", schema).alias("data")) \
-    .select("data.channel","data.author", create_chat("data.chat").alias("chat")) \
-    .select("channel","author", tldr("chat").alias("chat"))
+    .select("data.channel", "data.author", create_chat("data.chat").alias("chat")) \
+    .select("channel", "author", tldr("chat").alias("chat"))
 
 # print stream
 df_json.writeStream \
@@ -80,3 +82,10 @@ df_json \
     .format("es") \
     .start(elastic_index) \
     .awaitTermination()
+
+df_json.writeStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", kafkaServer) \
+    .option("subscribe", topicDiscord) \
+    .option("startingOffset", "earliest") \
+    .load()
