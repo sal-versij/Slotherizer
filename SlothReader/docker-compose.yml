@@ -1,6 +1,19 @@
 version: "3.8"
 
 services:
+# ---------------------------- Discord ----------------------------
+    discord:
+        build:
+            context: discord
+            dockerfile: Dockerfile
+        container_name: discord
+        volumes:
+            - ./logstash/json:/usr/share/logstash/json
+            - ./discord:/app
+        networks:
+            - tap
+
+# ---------------------------- logstash ----------------------------
     logstash:
         build:
             context: logstash
@@ -11,6 +24,7 @@ services:
         networks:
             - tap
 
+# ---------------------------- kafka ----------------------------
     zookeeper:
         image: confluentinc/cp-zookeeper:7.0.1
         container_name: zookeeper
@@ -55,6 +69,8 @@ services:
         networks:
             - tap
 
+
+# ---------------------------- spark ----------------------------
     spark:
         build:
             context: spark
@@ -72,6 +88,8 @@ services:
         networks:
             - tap
 
+
+# ---------------------------- elasticsearch ----------------------------
     elasticsearch:
         image: elasticsearch:7.9.2
         ports:
@@ -86,8 +104,8 @@ services:
                 hard: -1
         networks:
             - tap
-        profiles: [ "storage", "all" ]
 
+# ---------------------------- kibana ----------------------------
     kibana:
         image: kibana:7.9.2
         ports:
@@ -95,7 +113,6 @@ services:
         networks:
             - tap
         mem_limit: 1g
-        profiles: [ "visualization", "all" ]
 volumes:
     json:
 networks:
