@@ -7,7 +7,7 @@ from pyspark.sql.functions import from_json
 import pyspark.sql.types as tp
 
 openai.organization = "org-7WfLEfgviGF6D4bJvXBk5NFf"
-
+elastic_index = "tap"
 
 @udf(returnType=tp.StringType())
 def tldr(prompt):
@@ -63,8 +63,8 @@ df_kafka = spark \
 
 df_json = df_kafka.selectExpr("CAST(value AS STRING)") \
     .select(from_json("value", schema).alias("data")) \
-    .select("data.channel", create_chat("data.chat").alias("chat")) \
-    .select("channel", tldr("chat").alias("chat"))
+    .select("data.channel","data.author", create_chat("data.chat").alias("chat")) \
+    .select("channel","author", tldr("chat").alias("chat"))
 
 # print stream
 df_json.writeStream \
@@ -72,4 +72,11 @@ df_json.writeStream \
     .outputMode("append") \
     .start() \
     .awaitTermination()
-0
+
+# Outputting list of classes to Elastic Search
+df_json \
+    .writeStream \
+    .option("checkpointLocation", "/tmp/checkpoints") \
+    .format("es") \
+    .start(elastic_index) \
+    .awaitTermination()
