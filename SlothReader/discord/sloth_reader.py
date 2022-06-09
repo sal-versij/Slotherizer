@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import threading
 from pathlib import Path
@@ -6,8 +7,17 @@ from discord.ext import commands
 import json
 from dotenv import load_dotenv
 import re
+from confluent_kafka import Consumer
 
 print("Avvio di discord");
+
+# Consumer configuration
+conf = {'bootstrap.servers': "host1:9092,host2:9092",
+        'group.id': "foo",
+        'auto.offset.reset': 'smallest'}
+
+consumer = Consumer(conf)
+
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -51,10 +61,39 @@ async def phrase(ctx, message_number):
     else:
         await ctx.send("METTI UN INTERO CRETINO")
 
+running = True
+
+def consume_loop(consumer, topics):
+    try:
+        consumer.subscribe(topics)
+
+        while running:
+            msg = consumer.poll(timeout=1.0)
+            if msg is None: continue
+
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    # End of partition event
+                    sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
+                                     (msg.topic(), msg.partition(), msg.offset()))
+                elif msg.error():
+                    raise KafkaException(msg.error())
+            else:
+                consumer.commit(asynchronous=False)
+                print(msg)
+
+    finally:
+        # Close down consumer to commit final offsets.
+        consumer.close()
+
+def shutdown():
+    running = False
 
 # @bot.event
 # async def on_message(message):
 # 	if message.content == "qual'e la risposta?":
 # 		await message.channel.send("42")
+
+consume_loop(consumer, ["send-to-discord"])
 
 bot.run(TOKEN)
