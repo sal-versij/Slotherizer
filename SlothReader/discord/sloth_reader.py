@@ -17,11 +17,11 @@ print("Avvio di discord");
 #         print("Committed partition offsets: " + str(partitions))
 
 # Consumer configuration
-conf = {'bootstrap.servers': "kafkaserver:9092",
+conf = {'bootstrap.servers': "kafkaserver:29092",
         'group.id': "foo",
         'auto.offset.reset': 'smallest'}
         # 'on_commit': commit_completed
-        
+
 
 consumer = Consumer(conf)
 
@@ -77,7 +77,6 @@ def consume_loop(consumer, topics):
 
         while running:
             msg = consumer.poll(timeout=1.0)
-            print(msg)
             if msg is None: continue
 
             if msg.error():
@@ -89,9 +88,9 @@ def consume_loop(consumer, topics):
                     raise KafkaException(msg.error())
             else:
                 consumer.commit(asynchronous=False)
-                print(msg)
+                print("#", msg.key(), ": ", msg.value())
     except Exception as e:
-        print(e)
+        print('Exception: ' + str(e))
     finally:
         # Close down consumer to commit final offsets.
         consumer.close()
@@ -104,7 +103,7 @@ def shutdown():
 # 	if message.content == "qual'e la risposta?":
 # 		await message.channel.send("42")
 print("starting threads")
-# threading.Thread(target=consume_loop, args=[consumer, ["send-to-discord"]])
-consume_loop(consumer, ["send-to-discord"])
+threading.Thread(target=consume_loop, args=[consumer, ["send-to-discord"]])
+# consume_loop(consumer, ["send-to-discord"])
 
 bot.run(TOKEN)

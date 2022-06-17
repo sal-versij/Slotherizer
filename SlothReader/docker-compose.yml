@@ -41,14 +41,17 @@ services:
         container_name: kafkaserver
         hostname: kafkaserver
         ports:
+            - "29092:29092"
             - "9092:9092"
             - "9101:9101"
         depends_on:
             - zookeeper
         environment:
-            KAFKA_BROKER_ID: 0
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafkaserver:9092,PLAINTEXT_HOST://localhost:9092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: INSIDE://localhost:9092,OUTSIDE://kafkaserver:29092
+            KAFKA_LISTENERS: INSIDE://localhost:9092,OUTSIDE://kafkaserver:29092
+            KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -61,7 +64,7 @@ services:
         environment:
             KAFKA_CLUSTERS_0_NAME: my_cluster
             KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-            KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafkaserver:9092
+            KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafkaserver:29092
         ports:
             - 8080:8080
         depends_on:

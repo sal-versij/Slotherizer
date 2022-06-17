@@ -33,7 +33,7 @@ def create_chat(chat):
     return "\n".join(map(lambda r: f"[{r.date}]{r.author}: {r.content}", chat)) + "\nTl;Dr:"
 
 
-kafkaServer = "kafkaserver:9092"
+kafkaServer = "kafkaserver:29092"
 topicIn = "chat-log"
 topicDiscord = "send-to-discord"
 
