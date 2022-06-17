@@ -11,7 +11,7 @@ from confluent_kafka import Consumer, KafkaException, KafkaError
 print("Avvio di discord");
 
 # Consumer configuration
-conf = {'bootstrap.servers': "kafkaserver:9093",
+conf = {'bootstrap.servers': "kafkaserver:9092",
         'group.id': "foo",
         'auto.offset.reset': 'smallest'}
 
@@ -68,7 +68,7 @@ def consume_loop(consumer, topics):
         consumer.subscribe(topics)
 
         while running:
-            msg = consumer.poll(timeout=1.0) 
+            msg = consumer.poll(timeout=1.0)
             print(msg)
             if msg is None: continue
 

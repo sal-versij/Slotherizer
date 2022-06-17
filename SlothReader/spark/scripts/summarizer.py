@@ -67,10 +67,14 @@ df_json = df_kafka_in.selectExpr("CAST(value AS STRING)") \
     .select(from_json("value", schema).alias("data")) \
     .select("data.channel", "data.author", create_chat("data.chat").alias("chat")) \
     .select("channel", "author", tldr("chat").alias("value"))
+
+df_json \
+    .selectExpr("channel as key", "value") \
     .writeStream \
     .option("checkpointLocation", "/tmp/checkpoints") \
     .format("kafka") \
     .option("kafka.bootstrap.servers", kafkaServer) \
     .option("topic", topicDiscord) \
     .option("startingOffset", "earliest") \
-    .start()
+    .start() \
+    .awaitTermination()
