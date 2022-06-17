@@ -10,10 +10,18 @@ from confluent_kafka import Consumer, KafkaException, KafkaError
 
 print("Avvio di discord");
 
+# def commit_completed(err, partitions):
+#     if err:
+#         print(str(err))
+#     else:
+#         print("Committed partition offsets: " + str(partitions))
+
 # Consumer configuration
 conf = {'bootstrap.servers': "kafkaserver:9092",
         'group.id': "foo",
         'auto.offset.reset': 'smallest'}
+        # 'on_commit': commit_completed
+        
 
 consumer = Consumer(conf)
 
@@ -82,7 +90,8 @@ def consume_loop(consumer, topics):
             else:
                 consumer.commit(asynchronous=False)
                 print(msg)
-
+    except Exception as e:
+        print(e)
     finally:
         # Close down consumer to commit final offsets.
         consumer.close()
@@ -95,5 +104,7 @@ def shutdown():
 # 	if message.content == "qual'e la risposta?":
 # 		await message.channel.send("42")
 print("starting threads")
-threading.Thread(target=consume_loop, args=[consumer, ["send-to-discord"]])
+# threading.Thread(target=consume_loop, args=[consumer, ["send-to-discord"]])
+consume_loop(consumer, ["send-to-discord"])
+
 bot.run(TOKEN)
