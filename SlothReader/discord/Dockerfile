@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.7
 
 RUN pip3 install discord discord.py python-dotenv confluent-kafka
 WORKDIR /app

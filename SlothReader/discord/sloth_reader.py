@@ -6,12 +6,12 @@ from discord.ext import commands
 import json
 from dotenv import load_dotenv
 import re
-from confluent_kafka import Consumer
+from confluent_kafka import Consumer, KafkaException, KafkaError
 
 print("Avvio di discord");
 
 # Consumer configuration
-conf = {'bootstrap.servers': "host1:9092,host2:9092",
+conf = {'bootstrap.servers': "kafkaserver:9093",
         'group.id': "foo",
         'auto.offset.reset': 'smallest'}
 
@@ -63,11 +63,13 @@ async def phrase(ctx, message_number):
 running = True
 
 def consume_loop(consumer, topics):
+    print("start loop")
     try:
         consumer.subscribe(topics)
 
         while running:
-            msg = consumer.poll(timeout=1.0)
+            msg = consumer.poll(timeout=1.0) 
+            print(msg)
             if msg is None: continue
 
             if msg.error():
@@ -92,6 +94,6 @@ def shutdown():
 # async def on_message(message):
 # 	if message.content == "qual'e la risposta?":
 # 		await message.channel.send("42")
-
+print("starting threads")
 threading.Thread(target=consume_loop, args=[consumer, ["send-to-discord"]])
 bot.run(TOKEN)
