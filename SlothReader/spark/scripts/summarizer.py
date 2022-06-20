@@ -8,12 +8,13 @@ import pyspark.sql.types as tp
 
 openai.organization = "org-7WfLEfgviGF6D4bJvXBk5NFf"
 elastic_index = "tap"
+engine = "text-ada-001" #text-davinci-002
 
 
 @udf(returnType=tp.StringType())
 def tldr(prompt):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        engine=engine,
         prompt=prompt,
         temperature=0.7,
         max_tokens=256,
