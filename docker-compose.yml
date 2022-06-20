@@ -9,6 +9,7 @@ services:
         container_name: discord
         environment:
             - DISCORD_TOKEN
+            - KAFKA_SERVER=kafkaserver:29092
         volumes:
             - ./logs:/usr/share/logs
             - ./discord/scripts:/app
@@ -21,6 +22,9 @@ services:
             context: logstash
             dockerfile: Dockerfile
         container_name: logstash
+        environment:
+            - KAFKA_SERVER=kafkaserver:29092
+            - ELASTIC_SERVER=elasticsearch:9200
         volumes:
             - ./logs:/usr/share/logs
         networks:

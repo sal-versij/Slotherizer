@@ -31,7 +31,7 @@ def tldr(prompt):
 
         return response["choices"][0]["text"].strip()
     except:
-        return "Sono stati richiesti troppi messaggi, ripeova con un numero minore"
+        return "Sono stati richiesti troppi messaggi, riprova con un numero minore"
 
 
 @udf(returnType=tp.StringType())

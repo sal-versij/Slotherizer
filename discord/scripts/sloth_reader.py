@@ -11,7 +11,7 @@ print("Avvio di discord")
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='!')
-
+kafka_server = os.getenv("KAFKA_SERVER")
 
 @bot.command(name='slotherizer')
 async def phrase(ctx, message_number):
@@ -48,7 +48,7 @@ async def phrase(ctx, message_number):
         file.write(json_message_info + "\n")
         file.close()
     else:
-        await ctx.send("METTI UN INTERO CRETINO")
+        await ctx.send("La si prega di inserire un numero intero")
 
 
 # @bot.event
@@ -60,7 +60,7 @@ async def phrase(ctx, message_number):
 async def consume():
     consumer = AIOKafkaConsumer(
         'send-to-discord',
-        bootstrap_servers='kafkaserver:29092',
+        bootstrap_servers=kafka_server,
         group_id="discord-consumer")
     # Get cluster layout and join group `my-group`
     await consumer.start()
