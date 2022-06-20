@@ -3,14 +3,12 @@ import sys
 import threading
 from discord.ext import commands
 import json
-from dotenv import load_dotenv
 import re
 from aiokafka import AIOKafkaConsumer
 import asyncio
 
 print("Avvio di discord")
 
-load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='!')
 
@@ -22,7 +20,7 @@ async def phrase(ctx, message_number):
         message_number = int(message_number)
         messages = await ctx.channel.history(limit=message_number, oldest_first=False).flatten()
 
-        file = open('/usr/share/logstash/json/chatLog.json', 'a')
+        file = open('/usr/share/logs/chatLog.json', 'a')
 
         chat_log = {
             "channel": str(ctx.channel.id),

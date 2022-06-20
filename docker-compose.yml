@@ -7,9 +7,11 @@ services:
             context: discord
             dockerfile: Dockerfile
         container_name: discord
+        environment:
+            - DISCORD_TOKEN
         volumes:
-            - ./logstash/json:/usr/share/logstash/json
-            - ./discord:/app
+            - ./logs:/usr/share/logs
+            - ./discord/scripts:/app
         networks:
             - tap
 
@@ -20,7 +22,7 @@ services:
             dockerfile: Dockerfile
         container_name: logstash
         volumes:
-            - ./logstash/json:/usr/share/logstash/json
+            - ./logs:/usr/share/logs
         networks:
             - tap
 
@@ -78,15 +80,21 @@ services:
         build:
             context: spark
             dockerfile: Dockerfile
-        environment:
-            OPENAI_API_KEY: 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
         ports:
             - 4040:4040
+        environment:
+            - ORGANIZATION
+            - OPENAI_API_KEY
+            - ELASTIC_INDEX=tap
+            - ENGINE=text-ada-001
+            - KAFKA_SERVER=kafkaserver:29092
+            - TOPIC_IN=chat-log
+            - TOPIC_DISCORD=send-to-discord
         container_name: spark
         depends_on:
             - kafkaserver
         volumes:
-            - ./logstash/json:/usr/share/logstash/json
+            - ./logs:/usr/share/logs
             - ./spark/scripts:/app
         networks:
             - tap
@@ -117,7 +125,7 @@ services:
         networks:
             - tap
 volumes:
-    json:
+    logs:
 networks:
     tap:
         name: tap

@@ -5,27 +5,33 @@ from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.functions import from_json
 import pyspark.sql.types as tp
+import os
 
-openai.organization = "org-7WfLEfgviGF6D4bJvXBk5NFf"
-elastic_index = "tap"
-engine = "text-ada-001" #text-davinci-002
+openai.organization = os.getenv("ORGANIZATION")
+elastic_index = os.getenv("ELASTIC_INDEX")
+engine = os.getenv("ENGINE")
+kafkaServer = os.getenv("KAFKA_SERVER")
+topicIn = os.getenv("TOPIC_IN")
+topicDiscord = os.getenv("TOPIC_DISCORD")
+print(os.getenv("OPENAI_API_KEY"))
 
 
 @udf(returnType=tp.StringType())
 def tldr(prompt):
-    response = openai.Completion.create(
-        engine=engine,
-        prompt=prompt,
-        temperature=0.7,
-        max_tokens=256,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
+    try:
+        response = openai.Completion.create(
+            engine=engine,
+            prompt=prompt,
+            temperature=0.7,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
 
-    print('########', prompt, response["choices"][0]["text"])
-
-    return response["choices"][0]["text"].strip()
+        return response["choices"][0]["text"].strip()
+    except:
+        return "Sono stati richiesti troppi messaggi, ripeova con un numero minore"
 
 
 @udf(returnType=tp.StringType())
@@ -33,10 +39,6 @@ def create_chat(chat):
     # "Chatlog:\n"+
     return "\n".join(map(lambda r: f"[{r.date}]{r.author}: {r.content}", chat)) + "\nTl;Dr:"
 
-
-kafkaServer = "kafkaserver:29092"
-topicIn = "chat-log"
-topicDiscord = "send-to-discord"
 
 sparkConf = SparkConf().set("spark.app.name", "sloth-reader") \
     .set("spark.executor.heartbeatInterval", "200000") \
