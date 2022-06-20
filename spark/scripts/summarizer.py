@@ -19,19 +19,37 @@ print(os.getenv("OPENAI_API_KEY"))
 @udf(returnType=tp.StringType())
 def tldr(prompt):
     try:
-        response = openai.Completion.create(
-            engine=engine,
-            prompt=prompt,
-            temperature=0.7,
-            max_tokens=256,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0
-        )
+        lines = prompt.splitlines()
+        batches = []
+        batch = []
+        length = 0
+        for line in lines:
+            if len(line) + length < 4000:
+                batch.append(line)
+                length += len(line)
+            else:
+                batches.append("\n".join(batch))
+                batch = [line]
+                length = len(line)
+        batches.append("\n".join(batch))
 
-        return response["choices"][0]["text"].strip()
-    except:
-        return "Sono stati richiesti troppi messaggi, ripeova con un numero minore"
+        tldr = []
+        for batch in batches:
+            response = openai.Completion.create(
+                engine=engine,
+                prompt=prompt,
+                temperature=0.7,
+                max_tokens=256,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0
+            )
+            tldr.append(response["choices"][0]["text"].strip())
+
+        return "\n".join(tldr)
+    except Exception as e:
+        print(e)
+        return "Si è verificato un errore, riprova più tardi"
 
 
 @udf(returnType=tp.StringType())
