@@ -15,7 +15,7 @@ topicIn = os.getenv("TOPIC_IN")
 topicDiscord = os.getenv("TOPIC_DISCORD")
 print(os.getenv("OPENAI_API_KEY"))
 
-
+# chiamata all'API OpenAI
 @udf(returnType=tp.StringType())
 def tldr(prompt):
     try:
@@ -33,8 +33,8 @@ def tldr(prompt):
     except:
         return "Sono stati richiesti troppi messaggi, riprova con un numero minore"
 
-
-@udf(returnType=tp.StringType())
+# formattazione della chat
+@udf(returnType = tp.StringType())
 def create_chat(chat):
     # "Chatlog:\n"+
     return "\n".join(map(lambda r: f"[{r.date}]{r.author}: {r.content}", chat)) + "\nTl;Dr:"
