@@ -7,6 +7,7 @@ from pyspark.sql.functions import from_json
 import pyspark.sql.types as tp
 import os
 
+# Configuration variable
 openai.organization = os.getenv("ORGANIZATION")
 elastic_index = os.getenv("ELASTIC_INDEX")
 engine = os.getenv("ENGINE")
@@ -15,7 +16,7 @@ topicIn = os.getenv("TOPIC_IN")
 topicDiscord = os.getenv("TOPIC_DISCORD")
 print(os.getenv("OPENAI_API_KEY"))
 
-# chiamata all'API OpenAI
+# Call to OpenAI API
 @udf(returnType=tp.StringType())
 def tldr(prompt):
     try:
@@ -33,13 +34,13 @@ def tldr(prompt):
     except:
         return "Sono stati richiesti troppi messaggi, riprova con un numero minore"
 
-# formattazione della chat
+# Chat formatting whit date, author and content
 @udf(returnType = tp.StringType())
 def create_chat(chat):
     # "Chatlog:\n"+
     return "\n".join(map(lambda r: f"[{r.date}]{r.author}: {r.content}", chat)) + "\nTl;Dr:"
 
-
+# Spark Configuration
 sparkConf = SparkConf().set("spark.app.name", "sloth-reader") \
     .set("spark.executor.heartbeatInterval", "200000") \
     .set("spark.network.timeout", "300000")
@@ -48,6 +49,7 @@ sc = SparkContext.getOrCreate(conf=sparkConf)
 spark = SparkSession(sc)
 spark.sparkContext.setLogLevel("WARN")
 
+# Define the collection of all fields
 schema = tp.StructType([
     tp.StructField("channel", tp.StringType(), False),
     tp.StructField("author", tp.StringType(), False),
@@ -58,6 +60,7 @@ schema = tp.StructType([
     ])), True),
 ])
 
+# Subscribe to the topic and reading Kafka stream 
 df_kafka_in = spark \
     .readStream \
     .format("kafka") \
@@ -66,11 +69,13 @@ df_kafka_in = spark \
     .option("startingOffset", "earliest") \
     .load()
 
+# Data Select 
 df_json = df_kafka_in.selectExpr("CAST(value AS STRING)") \
     .select(from_json("value", schema).alias("data")) \
     .select("data.channel", "data.author", create_chat("data.chat").alias("chat")) \
     .select("channel", "author", tldr("chat").alias("value"))
 
+# Spark write into a Kafka topic
 df_json \
     .selectExpr("channel as key", "value") \
     .writeStream \

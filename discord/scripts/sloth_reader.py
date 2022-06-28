@@ -1,6 +1,4 @@
 import os
-import sys
-import threading
 from discord.ext import commands
 import json
 import re
@@ -9,13 +7,15 @@ import asyncio
 
 print("Avvio di discord")
 
+# Configuration variable
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='!')
 kafka_server = os.getenv("KAFKA_SERVER")
 
+# Take the message, format it and save all in the file chatLog.json
 @bot.command(name='slotherizer')
 async def phrase(ctx, message_number):
-    # Controlla se è un intero
+    # Check if it is an integer
     if re.match(r'^\s*\d+\s*$', message_number):
         message_number = int(message_number)
         messages = await ctx.channel.history(limit=message_number, oldest_first=False).flatten()
