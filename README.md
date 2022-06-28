@@ -23,3 +23,6 @@
 Per utilizzare il **bot Discord** dovrai prima *invitarlo* nel tuo **server Discord** (Segui questa [guida](https://www.writebots.com/discord-bot-token/#5_add_your_bot_to_a_discord_server)).
 
 Quando il bot è in un server, nelle chat testuali si potrà invocare il bot tramite il comando `!slotherizer <n>` inserendo al posto di `<n>` il numero di messaggi che vuoi riassumere.
+
+## Metriche
+In questo progetto usiamo Kibana per visualizzare le metriche di utilizzo del sistema, è presente una versione di default che si può importare su kibana non'appena si avvia che fornisce una dashboard con alcune metriche utili: `kibana/monitoring.ndjson`
