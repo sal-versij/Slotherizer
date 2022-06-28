@@ -56,7 +56,7 @@ async def phrase(ctx, message_number):
 # 	if message.content == "qual'e la risposta?":
 # 		await message.channel.send("42")
 
-
+# Consumer Kafka
 async def consume():
     consumer = AIOKafkaConsumer(
         'send-to-discord',
