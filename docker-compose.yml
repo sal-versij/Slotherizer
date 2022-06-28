@@ -90,7 +90,7 @@ services:
             - ORGANIZATION
             - OPENAI_API_KEY
             - ELASTIC_INDEX=tap
-            - ENGINE=text-ada-001
+            - ENGINE=text-davinci-002
             - KAFKA_SERVER=kafkaserver:29092
             - TOPIC_IN=chat-log
             - TOPIC_DISCORD=send-to-discord
